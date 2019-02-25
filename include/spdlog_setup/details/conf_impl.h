@@ -26,7 +26,8 @@
 #include "spdlog/sinks/daily_file_sink.h"
 #include <spdlog/sinks/rotating_file_sink.h>
 #define SPDLOG_HAS_SIMPLE_FILE_SINK 0
-#define SPDLOG_USE_ROTATE_ON_OPEN 1
+// TODO: something is wrong with version check and/or getting up to date spdlog
+#define SPDLOG_USE_ROTATE_ON_OPEN 0  
 #endif
 
 #include "spdlog/sinks/sink.h"
