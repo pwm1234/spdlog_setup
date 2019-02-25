@@ -21,10 +21,12 @@
 // version.h and SPDLOG_VERSION were added with commit 74c10df1 on 7/24/2018. 
 #include "spdlog/sinks/file_sinks.h"
 #define SPDLOG_HAS_SIMPLE_FILE_SINK 1
+#define SPDLOG_USE_ROTATE_ON_OPEN 0
 #else
 #include "spdlog/sinks/daily_file_sink.h"
 #include <spdlog/sinks/rotating_file_sink.h>
 #define SPDLOG_HAS_SIMPLE_FILE_SINK 0
+#define SPDLOG_USE_ROTATE_ON_OPEN 1
 #endif
 
 #include "spdlog/sinks/sink.h"
@@ -739,14 +741,9 @@ auto rotating_file_sink_from_table(
         ROTATE_ON_OPEN,
         false);
 
-#if defined(SPDLOG_VERSION)
-#if SPDLOG_VERSION > 10300
+#if defined(SPDLOG_USE_ROTATE_ON_OPEN)
     return make_shared<RotatingFileSink>(
         base_filename, max_filesize, max_files, rotate_on_open);
-#else
-    return make_shared<RotatingFileSink>(
-        base_filename, max_filesize, max_files);
-#endif
 #else
     return make_shared<RotatingFileSink>(
         base_filename, max_filesize, max_files);
