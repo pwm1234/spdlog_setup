@@ -739,8 +739,13 @@ auto rotating_file_sink_from_table(
         ROTATE_ON_OPEN,
         false);
 
+#if !defined(SPDLOG_VERSION) || SPDLOG_VERSION < 10301
+    return make_shared<RotatingFileSink>(
+        base_filename, max_filesize, max_files);
+#else
     return make_shared<RotatingFileSink>(
         base_filename, max_filesize, max_files, rotate_on_open);
+#endif
 }
 
 template <class DailyFileSink>
