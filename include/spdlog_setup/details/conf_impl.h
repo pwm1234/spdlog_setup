@@ -21,10 +21,13 @@
 // version.h and SPDLOG_VERSION were added with commit 74c10df1 on 7/24/2018. 
 #include "spdlog/sinks/file_sinks.h"
 #define SPDLOG_HAS_SIMPLE_FILE_SINK 1
+#define SPDLOG_USE_ROTATE_ON_OPEN 0
 #else
 #include "spdlog/sinks/daily_file_sink.h"
 #include <spdlog/sinks/rotating_file_sink.h>
 #define SPDLOG_HAS_SIMPLE_FILE_SINK 0
+// TODO: something is wrong with version check and/or getting up to date spdlog
+#define SPDLOG_USE_ROTATE_ON_OPEN 0  
 #endif
 
 #include "spdlog/sinks/sink.h"
@@ -135,6 +138,7 @@ static constexpr auto MAX_FILES = "max_files";
 static constexpr auto MAX_SIZE = "max_size";
 static constexpr auto NAME = "name";
 static constexpr auto PATTERN = "pattern";
+static constexpr auto ROTATE_ON_OPEN = "rotate_on_open";
 static constexpr auto ROTATION_HOUR = "rotation_hour";
 static constexpr auto ROTATION_MINUTE = "rotation_minute";
 static constexpr auto SINKS = "sinks";
@@ -698,6 +702,7 @@ auto rotating_file_sink_from_table(
     using names::BASE_FILENAME;
     using names::MAX_FILES;
     using names::MAX_SIZE;
+    using names::ROTATE_ON_OPEN;
 
     // fmt
     using fmt::format;
@@ -732,8 +737,18 @@ auto rotating_file_sink_from_table(
             "Missing '{}' field of u64 value for rotating_file_sink",
             MAX_FILES));
 
+    const auto rotate_on_open = value_from_table_or<bool>(
+        sink_table,
+        ROTATE_ON_OPEN,
+        false);
+
+#if defined(SPDLOG_USE_ROTATE_ON_OPEN)
+    return make_shared<RotatingFileSink>(
+        base_filename, max_filesize, max_files, rotate_on_open);
+#else
     return make_shared<RotatingFileSink>(
         base_filename, max_filesize, max_files);
+#endif
 }
 
 template <class DailyFileSink>
@@ -1055,6 +1070,11 @@ inline void setup_loggers_impl(
     // set up possibly the global pattern if present
     auto global_pattern_opt =
         value_from_table_opt<string>(config, GLOBAL_PATTERN);
+
+    if (global_pattern_opt)
+    {
+        spdlog::set_pattern(*global_pattern_opt);
+    }
 
     for (const auto &logger_table : *loggers) {
         const auto name = value_from_table<string>(
