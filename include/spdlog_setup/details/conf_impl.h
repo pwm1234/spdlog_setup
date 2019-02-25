@@ -1063,6 +1063,11 @@ inline void setup_loggers_impl(
     auto global_pattern_opt =
         value_from_table_opt<string>(config, GLOBAL_PATTERN);
 
+    if (global_pattern_opt)
+    {
+        spdlog::set_pattern(*global_pattern_opt);
+    }
+
     for (const auto &logger_table : *loggers) {
         const auto name = value_from_table<string>(
             logger_table,
